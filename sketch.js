@@ -1,4 +1,4 @@
-﻿var trex, trex_correndo, trex_colidiu;
+var trex, trex_correndo, trex_colidiu;
 var solo, soloinvisivel, imagemdosolo;
 var nuvem,imagemnuvem;
 var obst1,obst2,obst3,obst4,obst5,obst6;
@@ -49,10 +49,10 @@ function preload(){
 
 function setup() {
 
-  createCanvas(600,200)
+  createCanvas(windowWidth,windowHeight)
   
   //criar um sprite do trex
-  trex = createSprite(50,160,20,50);
+  trex = createSprite(50,height-70,20,50);
   trex.addAnimation("running", trex_correndo);
   trex.scale = 0.5;
   
@@ -60,13 +60,13 @@ function setup() {
   trex.addAnimation("collided" , trex_colidiu);
   
   //criar um sprite do solo
-  solo = createSprite(200,180,400,20);
+  solo = createSprite(width/2,650,width,10);
   solo.addImage("ground",imagemdosolo);
   solo.x = solo.width /2;
   solo.velocityX = -4;
   
   //creating invisible ground
-  soloinvisivel = createSprite(200,190,400,10);
+  soloinvisivel = createSprite(width/2,height-10,width,125); 
   soloinvisivel.visible = false;
   
   //pontuacao inical
@@ -78,15 +78,15 @@ function setup() {
   
   //raio colisor
   trex.setCollider("circle",0,0,40);
-  trex.debug = true;
+  trex.debug = false ;
   
   //fazendo as sprites fim e reinicio
-  fimjogo = createSprite(300,100);
+  fimjogo = createSprite(width/2,height/2- 50);
   fimjogo.addImage("fim",imagemfim);
   fimjogo.visible = false;
   fimjogo.scale =0.5;
   
-  reiniciojogo = createSprite(300,125);
+  reiniciojogo = createSprite(width/2,height/2);
   reiniciojogo.addImage("reiniciar",imagemreinicio);
   reiniciojogo.visible = false;
   reiniciojogo.scale=0.3;
@@ -97,7 +97,7 @@ function setup() {
 
 function draw() {
   //definir cor de fundo
-  background("yellow");
+  background("gray");
   
   //contando tempo de jogo
   //contagem=World.seconds;
@@ -115,12 +115,12 @@ function draw() {
     text("Score: "+ pontuacao,500,50);
     pontuacao = pontuacao + Math.round(frameCount/60);
     
-    // pular quando a tecla espaço é acionada
-    if(keyDown("space")&& trex.y >= 160) {
-      trex.velocityY = -12;
-      somsalto.play();
-      
+    if((touches.length > 0 || keyDown("SPACE")) && trex.y>=height-120) {
+      somsalto.play( )
+      trex.velocityY = -10;
+       touches = [];
     }
+    
      //gravidade
      trex.velocityY = trex.velocityY + 0.8;
   
@@ -137,7 +137,7 @@ function draw() {
     gerarobstaculos();
 
     if(pontuacao >0 && pontuacao%400==0){
-      somcheckpoint.play();
+     // somcheckpoint.play();
     }
     if(grupodeobstaculos.isTouching(trex)){
       estadodojogo = encerrar;
@@ -159,7 +159,10 @@ function draw() {
     grupodeobstaculos.setLifetimeEach(-1);
     grupodenuvens.setLifetimeEach(-1);
     
-
+     if(touches.length>0 || keyDown("SPACE")) {      
+      reset();
+      touches = []
+    }
     
     //torna menu visivel
     fimjogo.visible = true;
@@ -203,7 +206,7 @@ function gerarobstaculos(){
   //a cada 60 frames
    if(frameCount % 60 == 0){
       //cria a sprite do obstasculo
-      obstaculo = createSprite (400,170,40,10);
+      obstaculo = createSprite (width/2,650,width,10);
       obstaculo.velocityX = -(4+2*pontuacao/100);
       //sorteia numero de 1 a 6 para os obstaculos
       rand = Math.round(random(1,6));
