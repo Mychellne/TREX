@@ -1,266 +1,258 @@
-//variaveis
-var rex,rexcorendo,rexcolidiu;
-var bordas;
-var chao,andar;
-var chaoi;
-var nuvemi,imagemi;
-var obstaculo, obstaculo1, obstaculo2, obstaculo3, obstaculo4, obstaculo5,obstaculo6;
-var pontuacao=0;
-var estado = JOGAR;
-var JOGAR;
-var FIM = 0;
-var gameover,gameover1;
-var reiniciar, reiniciar1
-var pontos1=0;
-var somsalto;
-var sommorte;
-var sompontos; 
+var trex, trex_correndo, trex_colidiu;
+var solo, soloinvisivel, imagemdosolo;
+var nuvem,imagemnuvem;
+var obst1,obst2,obst3,obst4,obst5,obst6;
+var rand;
+var obstaculo;
+var pontuacao;
+var jogar = 1;
+var encerrar = 0;
+var estadodojogo = jogar;
+var grupodeobstaculos, grupodenuvens;
+var fimjogo,reiniciojogo;
+var imagemfim,imagemreinicio;
+var contagem;
+var somsalto,sommorte,somcheckpoint;
 
+ 
 
-//cimagens
 function preload(){
-
-rexcorendo=loadAnimation("trex1.png","trex3.png","trex4.png");  
+  //carregando imagens trex
+  trex_correndo = loadAnimation("trex1.png","trex2.png","trex3.png");
   
-rexcolidiu = loadAnimation("trex_collided.png");
+  trex_colidiu = loadAnimation("trex_collided.png");
   
-gameover1=loadImage("gameOver.png");  
+  //carregando imagem solo
+  imagemdosolo = loadImage("ground2.png");
+  
+  //carregando imagem nuvem
+  imagemnuvem = loadImage("cloud.png");
+  
+  //carregamento de imagens dos obstaculos
+  obst1 = loadImage("obstacle1.png");
+  obst2 = loadImage("obstacle2.png");
+  obst3 = loadImage("obstacle3.png");
+  obst4 = loadImage("obstacle4.png");
+  obst5 = loadImage("obstacle5.png");
+  obst6 = loadImage("obstacle6.png");
+  
+  //carregando imagem fim e reinicio
+  imagemfim = loadImage("gameOver.png");
+  imagemreinicio = loadImage("restart.png");
  
-reiniciar1=loadImage("restart.png");  
-  
-  
-andar=loadAnimation("ground2.png");
-
-imagemi=loadImage("cloud.png"); 
- 
-obstaculo1=loadImage("obstacle1.png");  
-
-obstaculo2=loadImage("obstacle2.png");  
-  
-obstaculo3=loadImage("obstacle3.png");      
-  
-obstaculo4=loadImage("obstacle4.png");   
-  
-obstaculo5=loadImage("obstacle5.png");   
-   
-obstaculo6=loadImage("obstacle6.png");   
-
-sommorte=loadSound("die.mp3"); 
-
-somsalto=loadSound("jump.mp3"); 
-
-sompontos=loadSound("checkPoint.mp3");  
+  //carregando os sons
+  somsalto =loadSound("jump.mp3");
+  sommorte= loadSound("die.mp3");
+  somcheckpoint= loadSound("checkPoint.mp3");
   
 }
 
-//tamanho, animação e caracteristicas
-function setup(){
+function setup() {
+
   createCanvas(windowWidth,windowHeight)
-
- chao=createSprite(400, 180, 800, 20)
- chao.x=chao.width/2
- chao.addAnimation("a",andar); 
   
- rex = createSprite(40, 170, 10, 10)
- rex.addAnimation("corendo",rexcorendo);
- rex.scale=0.5;
- 
-//raio de colisao 
- rex.debug=false;
- rex.setCollider("circle",0,0,40); 
+  //criar um sprite do trex
+  trex = createSprite(30,260,20,20);
+  trex.addAnimation("running", trex_correndo);
+  trex.scale = 0.5;
   
- chaoi=createSprite(100, 190, 200, 10);
- chaoi.visible=false;
-
- gruponuvem = new Group(); 
- 
- grupoobstaculos = new Group();
- 
- gameover=createSprite(width/2,height/2-50); 
- gameover.addImage(gameover1)
- gameover.scale=0.8;
+  //trexcolidiu
+  trex.addAnimation("collided" , trex_colidiu);
   
- reiniciar=createSprite(width/2,height/2); 
- reiniciar.addImage(reiniciar1); 
- reiniciar.scale=0.5; 
- 
- gameover.visible=false;   
- 
-reiniciar.visible=false;  
+  //criar um sprite do solo
+  solo = createSprite(width,220,width,125);
+  solo.addImage("ground",imagemdosolo);
+  solo.x = solo.width /2;
+  solo.velocityX = -4;
   
- }
-
-//condicionais
-function draw(){
-  background(180);
+  //creating invisible ground
+  soloinvisivel = createSprite(70,300,width,125); 
+  soloinvisivel.visible = false;
   
- text("pontos: "+pontuacao,480, 50)
- 
+  //pontuacao inical
+  pontuacao = 0;
+
+  // grupos 
+  grupodeobstaculos = new Group();
+  grupodenuvens = new Group();
   
-  if(estado===JOGAR){
+  //raio colisor
+  trex.setCollider("circle",0,0,40);
+  trex.debug = false ;
   
-   pontuacao=pontuacao+Math.round(frameCount /100)  
-    
-  chao.velocityX=-(4 + pontuacao/3000); 
-
-  if(pontuacao>0 && pontuacao%1000===0){
-
-  sompontos.play();  
-
-  }    
-    
-    
-  if(chao.x<210){
-
-  chao.x=chao.width/2
-
-  }
-    
-   if ((touches.lenght > 0 || keyDown("space")) && rex.y >=100){
-
-   somsalto.play();
-   rex.velocityY=-15; 
-   touches = [];  
-   } 
-    
+  //fazendo as sprites fim e reinicio
+  fimjogo = createSprite(width/2,height/2-50);
+  fimjogo.addImage("fim",imagemfim);
+  fimjogo.visible = false;
+  fimjogo.scale =0.5;
   
-    rex.velocityY=rex.velocityY+1; 
-    gerarNuvens(); 
-
-    gerarobstaculo();
-    
-    if(rex.isTouching(grupoobstaculos)){
-
-    estado=FIM;
-    sommorte.play(); 
-
-
-  }
-    
+  reiniciojogo = createSprite(width/2,height/2);
+  reiniciojogo.addImage("reiniciar",imagemreinicio);
+  reiniciojogo.visible = false;
+  reiniciojogo.scale=0.3;
+  
+  //iniciando contador de segundos
+  contagem=0;
 }
-  
-  
-  
-   else if(estado===FIM){
-  
 
-   chao.velocityX=0; 
-   rex.velocityY =0; 
+function draw() {
+  //definir cor de fundo
+  background("gray");
   
+  //contando tempo de jogo
+  //contagem=World.seconds;
+  //console.log(contagem);
+  
+ //console.log("estado do jogo:" +estadodojogo);
+  
+  //estados de jogos
+  if(estadodojogo == jogar){
+    
+    //mover solo
+    solo.velocityX = -(4+2*pontuacao/100);
+    
+    //sistema de pontuacao
+    text("Score: "+ pontuacao,500,50);
+    pontuacao = pontuacao + Math.round(frameCount/60);
+    
+    if((touches.length > 0 || keyDown("SPACE")) && trex.y>=100) {
+      somsalto.play( )
+      trex.velocityY = -10;
+      touches = [];
+    }
+    
+     //gravidade
+     trex.velocityY = trex.velocityY + 0.8;
+  
+    //reiniciando o solo
+    if (solo.x < 0){
+      solo.x = solo.width/2;
+    }
+    
+    //gerar nuvens
+    gerarnuvens();
+    //console.log(frameCount);
+
+    //gerar obstaculos
+    gerarobstaculos();
+
+    if(pontuacao >0 && pontuacao%400==0){
+     // somcheckpoint.play();
+    }
+    if(grupodeobstaculos.isTouching(trex)){
+      estadodojogo = encerrar;
+      sommorte.play();
+    }
+
+  } 
+  
+    else if (estadodojogo == encerrar){
+    solo.velocityX = 0;
+    trex.velocityY=0;
+    
      //altera a animação do Trex
-   //rex.changeAnimation("collided", rexcolidiu);
+    trex.changeAnimation("collided", trex_colidiu);
+    
+    //seta as velocidades
+    grupodeobstaculos.setVelocityXEach(0);
+    grupodenuvens.setVelocityXEach(0);
+    
+    //seta tempo de vida
+    grupodeobstaculos.setLifetimeEach(-1);
+    grupodenuvens.setLifetimeEach(-1);
+    
      
-   rex.addAnimation("corendo",rexcolidiu);
-  
-   grupoobstaculos.setVelocityXEach(0);
-   gruponuvem.setVelocityXEach(0); 
+    
+    //torna menu visivel
+    fimjogo.visible = true;
+    reiniciojogo.visible = true;
      
-       
-   gruponuvem.setLifetimeEach(-1);
-   grupoobstaculos.setLifetimeEach(-1); 
-   
-   gameover.visible=true;   
- 
-   reiniciar.visible=true; 
-   
   }
-
-  if(mousePressedOver(reiniciar)){
-    
-  resetar(); 
-    
-  }   
   
-  rex.collide(chaoi)
-  
-  
-  drawSprites(); 
- 
-  
- }
-
-
-function gerarNuvens (){
-  
- 
-if(frameCount % 100 === 0){
-   
-nuvemi=createSprite(700, 100, 10, 10)
-nuvemi.velocityX=-5;  
-nuvemi.addImage(imagemi);
-  
-console.log(rex.depth);
-console.log(nuvemi.depth);  
-  
-nuvemi.y=Math.round(random(10,85))
-
-//ajustando a profundidaade  
-
-nuvemi.depth = rex.depth;
-rex.depth = rex.depth+1;
-
-nuvemi.lifetime=150;  
-  
-gruponuvem.add(nuvemi);
-  
-}  
+  if(mousePressedOver(reiniciojogo)){
+      reset();
+    } 
   
 
+  //impedir o trex de cair 
+  trex.collide(soloinvisivel);
+  
+  
+  drawSprites();
   
 }
 
-function gerarobstaculo (){
-
-  if(frameCount % 50 === 0){
-    
- var obstaculo=createSprite(650, 165, 10, 10)
-   obstaculo.velocityX = -(6 + pontuacao/1000);
-   
-    
- var rand = Math.round(random(1,6)); 
-    switch(rand) { 
-      
-    case 1: obstaculo.addImage(obstaculo1);
-    break; 
-    
-    case 2: obstaculo.addImage(obstaculo2);
-    break; 
-   
-    case 3: obstaculo.addImage(obstaculo3);
-    break;
-    
-    case 4: obstaculo.addImage(obstaculo4);
-    break;
-    
-    case 5: obstaculo.addImage(obstaculo5);
-    break;
-    
-    case 6: obstaculo.addImage(obstaculo6);
-    break;
-    
+function gerarnuvens(){
+  // colocar nuvem de 60 em 60 quadros
+  if(frameCount % 60 == 0){
+    nuvem = createSprite (600,100,40,10);
+    nuvem.addImage("nuvem",imagemnuvem);
+    nuvem.scale = 0.5;
+    nuvem.y = Math.round(random(5,80));
+    //console.log(nuvem.depth);
+    //console.log(trex.depth);
+    //console.log("oi"+ "mundo");
+    nuvem.velocityX = -3;
+    nuvem.lifetime = 200;
+    nuvem.scale = random(0.10,0.5);
+    //profundidade
+    nuvem.depth = trex.depth;
+    trex.depth = trex.depth + 1;
+    grupodenuvens.add(nuvem);
   }
-  
-  obstaculo.lifetime=150;
-   obstaculo.scale=0.5; 
-    
-    
-  grupoobstaculos.add(obstaculo);
-    
-  }  
-
 }
 
-function resetar(){
- 
-estado = JOGAR;
+function gerarobstaculos(){
+  //a cada 60 frames
+   if(frameCount % 60 == 0){
+      //cria a sprite do obstasculo
+      obstaculo = createSprite (width,200,width,10);
+      obstaculo.velocityX = -(4+2*pontuacao/100);
+      //sorteia numero de 1 a 6 para os obstaculos
+      rand = Math.round(random(1,6));
+     
+     
+     switch(rand){
+       case 1:     obstaculo.addImage("obs1",obst1);
+                   break;
+                   
+       case 2:     obstaculo.addImage("obs2",obst2);
+                   break;
+         
+       case 3:     obstaculo.addImage("obs3",obst3);
+                   break;
+         
+       case 4:     obstaculo.addImage("obs4",obst4);
+                   break;
+         
+       case 5:     obstaculo.addImage("obs5",obst5);
+                   break;
+         
+       case 6:     obstaculo.addImage("obs6",obst6);
+                   break;
+         
+         
+       default: break;   
+     }
+     obstaculo.scale = 0.5;
+     obstaculo.lifetime = 150;
+     
+     //ADICIONANDO OBSTACULO AO GRUPO
+     grupodeobstaculos.add(obstaculo);
+    }
+}
+
+function reset(){
+  estadodojogo = jogar;
+  fimjogo.visible = false;
+  reiniciojogo.visible = false;
   
-gameover.visible=false;    
-reiniciar.visible=false; 
-grupoobstaculos .destroyEach();
-gruponuvem.destroyEach();  
-rex.addAnimation("corendo",rexcorendo);
-pontuacao=0;  
+  grupodeobstaculos.destroyEach();
+  grupodenuvens.destroyEach();
   
+  trex.changeAnimation("running",trex_correndo);
+  
+  pontuacao = 0;
   
 }
 
